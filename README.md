@@ -1,0 +1,841 @@
+<p align="center">
+  <img src="images/claude-mascot.svg" width="180" alt="Claude mascot pet icon">
+</p>
+
+<h1 align="center">Claude Code</h1>
+
+<p align="center"><strong>The practical cheat sheet—from first command to power-user workflows.</strong></p>
+
+After testing Claude Code extensively, I've developed this comprehensive cheat sheet that will take you from basic to advanced user without wasting time. Whether you're completely new to Claude Code or looking to master advanced features, this guide has you covered.
+
+## Quick Start
+
+Install Claude Code, sign in, and start it from the root of the project you want Claude to work on.
+
+### macOS, Linux, or WSL
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+claude auth login
+claude
+```
+
+### Windows PowerShell
+
+```powershell
+irm https://claude.ai/install.ps1 | iex
+claude auth login
+claude
+```
+
+### Windows CMD
+
+```cmd
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+claude auth login
+claude
+```
+
+### Package Managers
+
+```bash
+# macOS
+brew install --cask claude-code
+```
+
+```powershell
+# Windows
+winget install Anthropic.ClaudeCode
+```
+
+Check your installation:
+
+```bash
+claude --version
+claude auth status
+```
+
+## 📚 Table of Contents
+
+- 🟢 **Level 1: Basic Commands**
+- 🟡 **Level 2: Intermediate Commands**
+- 🟠 **Level 3: Advanced Commands**
+- 🔴 **Level 4: Expert Commands**
+- 🔵 **Level 5: Power User Commands**
+- 🟣 **Level 6: Master Commands**
+- 🤝 **Contributing**
+- 📄 **License**
+
+### Pages
+
+- 🤖 **[Subagents](subagents.md)** - Specialized AI agents for specific development tasks
+
+---
+
+## 🟢 Level 1: Basic Commands
+
+Essential commands to get started
+
+### Installation & Getting Started
+
+Claude Code requires an account with Claude Code access. After installing, sign in with `claude auth login` or start `claude` and follow the browser prompts.
+
+#### Native Install
+
+```bash
+# Recommended native install for macOS, Linux, or WSL
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+```powershell
+# Windows PowerShell
+irm https://claude.ai/install.ps1 | iex
+```
+
+```cmd
+# Windows CMD
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+```
+
+#### Package Managers
+
+```bash
+# macOS Homebrew
+brew install --cask claude-code
+```
+
+```powershell
+# Windows WinGet
+winget install Anthropic.ClaudeCode
+```
+
+#### npm
+
+```bash
+# Deprecated npm fallback
+npm install -g @anthropic-ai/claude-code
+```
+
+#### Authentication
+
+```bash
+# Sign in
+claude auth login
+
+# Check sign-in status
+claude auth status
+
+# Sign out
+claude auth logout
+```
+
+#### First Run and Updates
+
+```bash
+# Start interactive REPL
+claude
+
+# Start with initial prompt
+claude "summarize this project"
+
+# Check version
+claude --version
+
+# Update to latest version
+claude update
+
+# Install or reinstall a specific native version
+claude install stable
+claude install latest
+claude install 2.1.118
+```
+
+### Basic Navigation
+
+```bash
+/help                     # Show help and available commands
+/exit                     # Exit the REPL
+/clear [name]             # Start a fresh conversation; previous session stays resumable
+/compact [instructions]   # Summarize current history to free context
+/context                  # Visualize context usage
+/config                   # Open settings panel
+/status                   # Show version, model, account, and connectivity
+/doctor                   # Check Claude Code installation health
+```
+
+### Basic File Operations and Print Mode
+
+```bash
+# Print mode - execute a prompt and exit
+claude -p "explain this function"
+
+# Process piped content
+cat logs.txt | claude -p "explain"
+
+# Continue most recent conversation
+claude -c
+
+# Continue in print mode
+claude -c -p "Check for type errors"
+```
+
+### Session Management
+
+```bash
+# Continue the most recent session in this directory
+claude --continue
+
+# Resume by session ID or name
+claude --resume abc123 "query"
+claude --resume auth-refactor
+
+# Open the session picker
+claude --resume
+
+# Name a session at startup
+claude -n auth-refactor
+
+# Rename inside an active session
+/rename auth-refactor
+
+# Branch the current conversation
+/branch try-streaming-approach
+
+# Resume a session linked to a pull request
+claude --from-pr 123
+```
+
+### Keyboard Shortcuts
+
+```bash
+Ctrl+C                    # Interrupt; if idle, clear input, then exit on second press
+Ctrl+D                    # Exit Claude Code
+Ctrl+O                    # Toggle transcript viewer
+Ctrl+R                    # Reverse-search command history
+Ctrl+T                    # Toggle task list
+Esc                       # Interrupt current response or tool call
+Esc Esc                   # Clear draft, or open rewind menu when input is empty
+Shift+Tab                 # Cycle permission modes
+Alt+P / Option+P          # Switch model
+Alt+T / Option+T          # Toggle extended thinking
+Alt+O / Option+O          # Toggle fast mode
+@                         # File path mention autocomplete
+!                         # Shell mode
+Up/Down                   # Move in multiline input or navigate command history
+```
+
+## 🟡 Level 2: Intermediate Commands
+
+Configuration, model, and session management
+
+### Model Configuration
+
+```bash
+# Switch models
+claude --model sonnet                    # Use Sonnet model
+claude --model opus                      # Use Opus model
+claude --model claude-sonnet-4-6         # Use a specific model
+
+# Set reasoning effort for the session
+claude --effort high
+/effort high
+
+# Change model inside a session
+/model sonnet
+```
+
+### Directory Management
+
+```bash
+# Add additional working directories
+claude --add-dir ../apps ../lib
+
+# Validate directory paths
+claude --add-dir /path/to/project
+```
+
+### Output Formatting
+
+```bash
+# Output formats for print mode
+claude -p "query" --output-format json
+claude -p "query" --output-format text
+claude -p "query" --output-format stream-json
+
+# Input formatting for print mode
+claude -p --input-format stream-json
+```
+
+### Session Control
+
+```bash
+# Limit agentic turns in print mode
+claude -p --max-turns 3 "query"
+
+# Verbose logging
+claude --verbose
+
+# Session cost, limits, and activity stats
+/usage
+/cost                     # Alias for /usage
+/stats                    # Alias for /usage
+```
+
+## 🟠 Level 3: Advanced Commands
+
+Tools and permission management
+
+### Tool Management
+
+```bash
+# Allow specific tools without prompting
+claude --allowedTools "Bash(git log:*)" "Bash(git diff:*)" "Write"
+
+# Disallow specific tools
+claude --disallowedTools "Bash(rm:*)" "Bash(sudo:*)"
+
+# Prompt for specific tool permission
+claude -p --permission-prompt-tool mcp_auth_tool "query"
+
+# Skip all permission prompts (dangerous)
+claude --dangerously-skip-permissions
+```
+
+### Slash Commands - Session Management
+
+```bash
+/compact [instructions]   # Summarize conversation with optional instructions
+/clear                    # Reset conversation history and context
+/exit                     # Exit the REPL
+/help                     # Show available commands
+/config                   # Open configuration panel
+```
+
+### Slash Commands - System
+
+```bash
+/doctor                   # Check installation health
+/usage                    # Show session cost, limits, and activity stats
+/ide                      # Manage IDE integrations
+```
+
+## 🔴 Level 4: Expert Commands
+
+MCP and advanced integrations
+
+### Model Context Protocol (MCP)
+
+```bash
+# Configure MCP servers
+claude --mcp
+
+# MCP server management (via slash commands)
+/mcp                      # Access MCP functionality
+```
+
+### Advanced Piping
+
+```bash
+# Complex piping operations
+git log --oneline | claude -p "summarize these commits"
+cat error.log | claude -p "find the root cause"
+ls -la | claude -p "explain this directory structure"
+```
+
+### Programmatic Usage
+
+```bash
+# JSON output for scripting
+claude -p "analyze code" --output-format json
+
+# Stream JSON for real-time processing
+claude -p "large task" --output-format stream-json
+
+# Batch processing
+claude -p --max-turns 1 "quick query"
+```
+
+## 🔵 Level 5: Power User Commands
+
+Advanced workflows and automation
+
+### Custom Slash Commands
+
+```bash
+# Create custom commands in .claude/commands/
+# Example: .claude/commands/debug.md
+/debug                    # Execute custom debug command
+/test                     # Execute custom test command
+/deploy                   # Execute custom deploy command
+```
+
+### Complex Tool Combinations
+
+```bash
+# Advanced tool permissions
+claude --allowedTools "Bash(git:*)" "Write" "Read" \
+       --disallowedTools "Bash(rm:*)" "Bash(sudo:*)"
+
+# Multiple directory access
+claude --add-dir ../frontend ../backend ../shared
+```
+
+### Performance Optimization
+
+```bash
+# Limit context for performance
+claude -p --max-turns 5 "focused query"
+
+# Clear context frequently
+/clear                    # Use between tasks for better performance
+
+# Compact conversations
+/compact "keep only important parts"
+```
+
+## 🟣 Level 6: Master Commands
+
+Expert automation and custom workflows
+
+### Advanced Configuration
+
+```bash
+# Complex model and tool configuration
+claude --model claude-sonnet-4-6 \
+       --add-dir ../apps ../lib ../tools \
+       --allowedTools "Bash(git:*)" "Write" "Read" \
+       --verbose \
+       --output-format json
+```
+
+### Automation Scripts
+
+```bash
+# Scripted Claude interactions
+#!/bin/bash
+claude -p "analyze codebase" --output-format json > analysis.json
+claude -p "generate tests" --max-turns 3 --output-format text > tests.txt
+```
+
+### Advanced Session Management
+
+```bash
+# Session ID management
+SESSION_ID=$(claude -p "start analysis" --output-format json | jq -r '.session_id')
+claude -r "$SESSION_ID" "continue analysis"
+```
+
+### Complex Workflows
+
+```bash
+# Multi-step automation
+claude -p "analyze project structure" | \
+claude -p "suggest improvements" | \
+claude -p "create implementation plan"
+```
+
+---
+
+## 🟤 Level 7: Workflow Automation
+
+Advanced automation patterns and multi-step processes
+
+### Automated Code Review Workflows
+
+```bash
+# Automated PR review process
+#!/bin/bash
+git diff HEAD~1 | claude -p "review this PR for security issues" > security_review.md
+git diff HEAD~1 | claude -p "check for performance issues" > performance_review.md
+git diff HEAD~1 | claude -p "suggest improvements" > improvements.md
+```
+
+### Continuous Integration Integration
+
+```bash
+# CI/CD pipeline integration
+claude -p "analyze test coverage" --output-format json | jq '.coverage_percentage'
+claude -p "generate release notes from commits" --max-turns 2 > RELEASE_NOTES.md
+```
+
+### Batch Processing Workflows
+
+```bash
+# Process multiple files
+find . -name "*.js" -exec claude -p "analyze this file for bugs: {}" \; > bug_report.txt
+
+# Automated documentation generation
+for file in src/*.py; do
+    claude -p "generate docstring for $file" --output-format text >> docs.md
+done
+```
+
+---
+
+## ⚫ Level 8: Integration & Ecosystem
+
+IDE integrations, Git workflows, and third-party tool connections
+
+### IDE Integration Commands
+
+```bash
+# VS Code integration
+/ide vscode                # Configure VS Code integration
+/ide configure             # Setup IDE configurations
+
+# Custom IDE commands
+claude --ide-mode "explain selected code"
+claude --ide-mode "refactor this function"
+```
+
+### Git Workflow Integration
+
+```bash
+# Git hooks integration
+claude -p "create pre-commit hook for code quality" > .git/hooks/pre-commit
+
+# Advanced Git operations
+git log --oneline -10 | claude -p "create changelog from these commits"
+git diff --name-only | claude -p "explain what changed in this commit"
+```
+
+### Third-Party Tool Connections
+
+```bash
+# Database integration
+mysql -e "SHOW TABLES" | claude -p "analyze database structure"
+
+# Docker integration
+docker ps | claude -p "analyze running containers"
+docker logs container_name | claude -p "find errors in logs"
+```
+
+---
+
+## ⚪ Level 9: Performance & Optimization
+
+Advanced performance tuning, resource management, and efficiency tips
+
+### Memory & Resource Management
+
+```bash
+# Optimize memory usage
+claude -p --max-turns 1 "quick analysis"      # Single turn for efficiency
+claude -p --compact-mode "analyze with minimal context"
+
+# Resource monitoring
+/usage                     # Check current session costs, limits, and activity stats
+/doctor --performance      # Performance diagnostics
+```
+
+### Caching & Optimization
+
+```bash
+# Efficient session reuse
+claude -c -p "continue previous analysis"      # Reuse existing context in print mode
+claude --cache-results "repetitive task"      # Cache common operations
+
+# Parallel processing
+claude -p "task 1" & claude -p "task 2" & wait  # Parallel execution
+```
+
+### Large-Scale Processing
+
+```bash
+# Handle large codebases efficiently
+claude --add-dir . --max-context 50000 "analyze entire project"
+claude --stream-output "process large dataset" | head -100
+```
+
+---
+
+## 🔘 Level 10: Enterprise & Production
+
+Production-ready configurations, team workflows, and enterprise features
+
+### Team Collaboration
+
+```bash
+# Shared team configurations
+claude --config-file team-config.json "standardized analysis"
+
+# Team session sharing
+claude -r "team-session-id" "continue team discussion"
+```
+
+### Production Environment Setup
+
+```bash
+# Production-ready configuration
+claude --production-mode \
+       --security-enabled \
+       --audit-logging \
+       --max-turns 10 \
+       "production analysis"
+```
+
+### Enterprise Security
+
+```bash
+# Security-focused operations
+claude --disallowedTools "Bash(rm:*)" "Bash(sudo:*)" "Bash(chmod:*)" \
+       --audit-mode \
+       --no-external-calls \
+       "secure code review"
+```
+
+### Monitoring & Compliance
+
+```bash
+# Audit and compliance
+claude --audit-log /var/log/claude-audit.log "compliance check"
+claude --compliance-mode "analyze for security compliance"
+```
+
+## Command Reference Tables
+
+### CLI Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `claude` | Start interactive REPL | `claude` |
+| `claude "query"` | Start REPL with prompt | `claude "explain this project"` |
+| `claude -p "query"` | Print mode: run a prompt and exit | `claude -p "explain function"` |
+| `cat file \| claude -p "query"` | Process piped content | `cat logs.txt \| claude -p "explain"` |
+| `claude -c` / `claude --continue` | Continue the most recent conversation in the current directory | `claude --continue` |
+| `claude -r "<session>"` / `claude --resume <session>` | Resume by session ID or name | `claude --resume auth-refactor` |
+| `claude --resume` | Open the session picker | `claude --resume` |
+| `claude -n <name>` | Name a session at startup | `claude -n auth-refactor` |
+| `claude --from-pr <PR>` | Resume the session linked to a pull request | `claude --from-pr 123` |
+| `claude auth login` | Sign in to Claude Code | `claude auth login` |
+| `claude auth status` | Check authentication status | `claude auth status` |
+| `claude auth logout` | Sign out | `claude auth logout` |
+| `claude update` | Update to latest version | `claude update` |
+| `claude install [version]` | Install or reinstall the native binary | `claude install stable` |
+| `claude mcp` | Configure MCP servers | `claude mcp` |
+
+### CLI Flags
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| `--model` | Set the model for this session | `--model sonnet` |
+| `--effort` | Set reasoning effort for this session | `--effort high` |
+| `--add-dir` | Add working directories for file access | `--add-dir ../apps ../lib` |
+| `--allowedTools` | Allow tools without prompting | `--allowedTools "Bash(git:*)"` |
+| `--disallowedTools` | Disallow specific tools | `--disallowedTools "Bash(rm:*)"` |
+| `--output-format` | Set output format | `--output-format json` |
+| `--input-format` | Set input format | `--input-format stream-json` |
+| `--max-turns` | Limit agentic turns in print mode | `--max-turns 3` |
+| `--verbose` | Enable verbose logging | `--verbose` |
+| `--continue` | Continue session | `--continue` |
+| `--resume` | Resume session | `--resume abc123` |
+| `--from-pr` | Resume a session linked to a pull request | `--from-pr 123` |
+| `--fork-session` | Resume into a copied session branch | `--continue --fork-session` |
+| `--dangerously-skip-permissions` | Skip all permission prompts | `--dangerously-skip-permissions` |
+
+### Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/help` | Show help and available commands |
+| `/exit` | Exit the CLI; in an attached background session, detach |
+| `/clear [name]` | Start a new conversation; previous session remains resumable |
+| `/compact [instructions]` | Summarize the current conversation to free context |
+| `/context [all]` | Show current context usage |
+| `/config` | Open settings panel |
+| `/status` | Show version, model, account, and connectivity |
+| `/doctor` | Check installation health |
+| `/usage` | Show session cost, limits, and activity stats |
+| `/cost` | Alias for `/usage` |
+| `/stats` | Alias for `/usage` |
+| `/model [model]` | Change model inside the session |
+| `/effort [level|auto]` | Adjust reasoning effort |
+| `/resume [session]` | Resume another conversation |
+| `/rename [name]` | Rename the current session |
+| `/branch [name]` | Fork the conversation from the current point |
+| `/export [filename]` | Export the current conversation |
+| `/diff` | Open an interactive diff viewer |
+| `/ide` | Manage IDE integrations |
+| `/mcp` | Access MCP functionality |
+
+### Keyboard Shortcut
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+C` | Interrupt; if idle, clear input, then exit on second press |
+| `Ctrl+D` | Exit Claude Code |
+| `Ctrl+O` | Toggle transcript viewer |
+| `Ctrl+R` | Reverse-search command history |
+| `Ctrl+T` | Toggle task list |
+| `Esc` | Interrupt current response or tool call |
+| `Esc Esc` | Clear draft, or open rewind menu when input is empty |
+| `Shift+Tab` | Cycle permission modes |
+| `Alt+P` / `Option+P` | Switch model |
+| `Alt+T` / `Option+T` | Toggle extended thinking |
+| `Alt+O` / `Option+O` | Toggle fast mode |
+| `@` | File path mention autocomplete |
+| `!` | Shell mode |
+| `Up/Down` | Move in multiline input or navigate command history |
+
+## Best Practices
+
+### Performance Tips
+
+- Use `/clear` frequently between tasks
+- Limit context with `--max-turns`
+- Use `/compact` for long conversations
+- Specify exact tools with `--allowedTools`
+
+### Security Tips
+
+- Avoid `--dangerously-skip-permissions`
+- Use `--disallowedTools` for dangerous commands
+- Review tool permissions regularly
+- Keep Claude Code updated
+
+### Workflow Tips
+
+- Create custom slash commands in `.claude/commands/`
+- Use `--output-format json` for automation
+- Pipe commands for complex workflows
+- Use session IDs for long-running tasks
+
+## Best Practices by Level
+
+### Beginner Best Practices (Levels 1-3)
+
+- Start with basic commands and gradually progress
+- Use `/help` frequently to discover new features
+- Practice with simple queries before complex ones
+- Keep sessions focused with `/clear` between tasks
+
+### Intermediate Best Practices (Levels 4-6)
+
+- Master tool permissions for security
+- Use JSON output for automation scripts
+- Learn MCP for advanced integrations
+- Create custom slash commands for repeated tasks
+
+### Advanced Best Practices (Levels 7-10)
+
+- Implement automated workflows for repetitive tasks
+- Use enterprise features for team collaboration
+- Monitor performance and optimize resource usage
+- Follow security best practices in production
+
+## Pro Tips & Tricks
+
+### Efficiency Tips
+
+- Use `Ctrl+C` to cancel long-running operations
+- Combine multiple flags for complex configurations
+- Use piping for multi-step data processing
+- Cache common operations for better performance
+
+### Security Pro Tips
+
+- Always use `--disallowedTools` for dangerous commands
+- Enable audit logging in production environments
+- Review tool permissions regularly
+- Use `--security-enabled` for sensitive operations
+
+### Workflow Pro Tips
+
+- Create templates for common automation patterns
+- Use session IDs for long-running collaborative tasks
+- Implement proper error handling in automation scripts
+- Document custom workflows for team sharing
+
+## Troubleshooting Common Issues
+
+### Installation Issues
+
+```bash
+# Check installation
+claude --version
+claude auth status
+claude doctor
+
+# Reinstall native Claude Code
+claude install stable
+
+# Native install for macOS, Linux, or WSL
+curl -fsSL https://claude.ai/install.sh | bash
+
+# Windows PowerShell
+irm https://claude.ai/install.ps1 | iex
+
+# Windows CMD
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+
+# If you installed through npm previously
+npm uninstall -g @anthropic-ai/claude-code
+npm install -g @anthropic-ai/claude-code
+```
+
+### Performance Issues
+
+```bash
+# Clear context for better performance
+/clear
+
+# Limit context size
+claude -p --max-turns 3 "focused query"
+
+# Use compact mode
+/compact "keep only essentials"
+```
+
+### Permission Issues
+
+```bash
+# Check current permissions
+claude --list-permissions
+
+# Reset permissions
+claude --reset-permissions
+
+# Configure specific permissions
+claude --allowedTools "Bash(git:*)" --disallowedTools "Bash(rm:*)"
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see the Claude Code documentation for guidelines.
+
+### Ways to Contribute
+
+- 🐛 Report bugs or issues
+- 📝 Improve documentation
+- ✨ Add new command examples
+- 🔧 Test commands and report results
+
+## 📄 License
+
+This cheat sheet is provided under the MIT License.
+
+## ⭐ Support
+
+If this cheat sheet helped you, please share it with other developers!
+If this cheat sheet helped you master Claude Code, please:
+
+- ⭐ Star our GitHub repository
+- 📢 Share it with other developers
+- 💬 Leave feedback in the comments
+- 🔄 Follow for updates
+
+## Resources & Further Learning
+
+For more Claude Code resources, visit the official Anthropic documentation at
+
+- [Official Claude Code Documentation](https://code.claude.com/docs/en/overview)
+- [Claude Code Setup Guide](https://code.claude.com/docs/en/setup)
+- [Claude Code CLI Reference](https://code.claude.com/docs/en/cli-reference)
+- [Claude Code Commands Reference](https://code.claude.com/docs/en/commands)
+- [Claude Code Interactive Mode](https://code.claude.com/docs/en/interactive-mode)
+- [Claude Code Session Management](https://code.claude.com/docs/en/sessions)
+- [Claude Code GitHub Repository](https://github.com/anthropics/claude-code)
+- [Anthropic API Documentation](https://docs.anthropic.com)
+- [MCP Documentation](https://code.claude.com/docs/en/mcp)
+
+**Last verified against official Claude Code docs**: May 26, 2026

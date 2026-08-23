@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Claude mascot pet</title>
+  <desc id="description">A friendly blocky terracotta mascot with two square black eyes.</desc>
+  <path fill="#D97757" d="M116 64h280a20 20 0 0 1 20 20v72h44a20 20 0 0 1 20 20v88a20 20 0 0 1-20 20h-44v144a20 20 0 0 1-20 20h-36a20 20 0 0 1-20-20v-84h-48v84a20 20 0 0 1-20 20h-32a20 20 0 0 1-20-20v-84h-48v84a20 20 0 0 1-20 20h-36a20 20 0 0 1-20-20V284H52a20 20 0 0 1-20-20v-88a20 20 0 0 1 20-20h44V84a20 20 0 0 1 20-20Z"/>
+  <path fill="#111111" d="M144 180h44v44h-44zm180 0h44v44h-44z"/>
+</svg>

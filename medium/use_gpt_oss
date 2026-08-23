@@ -1,0 +1,270 @@
+"""
+Claude Code to Ollama Proxy Server
+==================================
+
+This proxy server acts as a middleware between Claude Code and Ollama,
+translating API calls and responses between the two different formats.
+
+Purpose: Enable Claude Code to work with local Ollama models (specifically GPT-OSS)
+License: MIT
+
+Key Features:
+- Translates Claude API requests to Ollama format
+- Converts Ollama responses back to Claude API format
+- Supports both streaming and non-streaming requests
+- Handles authentication bypass for local models
+- Provides health check endpoints
+
+Requirements:
+- Python 3.7+
+- Flask
+- Requests
+- Ollama running locally with GPT-OSS model
+
+Usage:
+1. Start Ollama: `ollama serve`
+2. Pull model: `ollama pull gpt-oss:20b`
+3. Run proxy: `python claude_ollama_proxy.py`
+4. Configure Claude Code to use http://localhost:8000 as base URL
+
+Environment Variables:
+- ANTHROPIC_API_KEY="dummy-key" (required by Claude Code)
+- ANTHROPIC_BASE_URL="http://localhost:8000" (points to this proxy)
+
+Endpoints:
+- POST /v1/messages - Main message endpoint (supports streaming)
+- GET /v1/models - List available models
+- GET /health - Health check
+
+Note: This proxy makes Claude Code think it's talking to Claude while
+actually communicating with your local Ollama instance.
+"""
+
+from flask import Flask, request, jsonify, Response
+import requests
+import json
+import time
+from typing import Dict, Any
+
+app = Flask(__name__)
+
+# Configuration
+OLLAMA_BASE_URL = "http://localhost:11434"
+OLLAMA_MODEL = "gpt-oss:20b"  # Change to your model
+
+class ClaudeOllamaProxy:
+    def __init__(self):
+        self.conversation_history = {}
+    
+    def claude_to_ollama_format(self, claude_request: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert Claude API request to Ollama format"""
+        
+        messages = claude_request.get('messages', [])
+        ollama_messages = []
+        
+        for msg in messages:
+            role = msg.get('role', 'user')
+            content = msg.get('content', '')
+            
+            # Handle Claude's content format (can be string or list)
+            if isinstance(content, list):
+                text_content = ""
+                for block in content:
+                    if block.get('type') == 'text':
+                        text_content += block.get('text', '')
+                content = text_content
+            
+            ollama_messages.append({
+                "role": role,
+                "content": content
+            })
+        
+        return {
+            "model": OLLAMA_MODEL,
+            "messages": ollama_messages,
+            "stream": claude_request.get('stream', False)
+        }
+    
+    def ollama_to_claude_format(self, ollama_response: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert Ollama response to Claude API format"""
+        
+        if 'message' in ollama_response:
+            content = ollama_response['message'].get('content', '')
+            
+            return {
+                "id": f"msg_{int(time.time())}",
+                "type": "message",
+                "role": "assistant",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": content
+                    }
+                ],
+                "model": "claude-3-sonnet-20240229",  # Mimic Claude
+                "stop_reason": "end_turn",
+                "stop_sequence": None,
+                "usage": {
+                    "input_tokens": 0,
+                    "output_tokens": 0
+                }
+            }
+        
+        return ollama_response
+
+def handle_streaming_request(ollama_request: Dict[str, Any], proxy: ClaudeOllamaProxy):
+    """Handle streaming requests from Claude Code"""
+    def generate_claude_stream():
+        try:
+            # Make streaming request to Ollama
+            response = requests.post(
+                f"{OLLAMA_BASE_URL}/api/chat",
+                json=ollama_request,
+                stream=True,
+                timeout=120  # Increased timeout for large models
+            )
+            response.raise_for_status()
+            
+            # Send initial message_start event
+            yield f"data: {json.dumps({'type': 'message_start'})}\n\n"
+            
+            # Process Ollama's streaming response
+            for line in response.iter_lines():
+                if line:
+                    try:
+                        ollama_chunk = json.loads(line.decode('utf-8'))
+                        
+                        # Check if this is the final chunk
+                        if ollama_chunk.get('done', False):
+                            # Send final chunk in Claude format
+                            yield f"data: {json.dumps({'type': 'message_stop'})}\n\n"
+                            break
+                        
+                        # Convert streaming chunk to Claude format
+                        if 'message' in ollama_chunk:
+                            content = ollama_chunk['message'].get('content', '')
+                            if content:
+                                claude_chunk = {
+                                    "type": "content_block_delta",
+                                    "index": 0,
+                                    "delta": {
+                                        "type": "text_delta",
+                                        "text": content
+                                    }
+                                }
+                                yield f"data: {json.dumps(claude_chunk)}\n\n"
+                    
+                    except json.JSONDecodeError:
+                        continue
+                        
+        except requests.exceptions.RequestException as e:
+            error_chunk = {
+                "type": "error",
+                "error": {
+                    "type": "api_error",
+                    "message": f"Ollama request failed: {str(e)}"
+                }
+            }
+            yield f"data: {json.dumps(error_chunk)}\n\n"
+    
+    return Response(
+        generate_claude_stream(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no'
+        }
+    )
+
+@app.route('/v1/messages', methods=['POST'])
+def handle_messages():
+    """Main endpoint that Claude Code hits"""
+    try:
+        claude_request = request.get_json()
+        proxy = ClaudeOllamaProxy()
+        
+        # Convert request format
+        ollama_request = proxy.claude_to_ollama_format(claude_request)
+        
+        # Handle streaming vs non-streaming
+        if ollama_request.get('stream', False):
+            return handle_streaming_request(ollama_request, proxy)
+        else:
+            return handle_non_streaming_request(ollama_request, proxy)
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def handle_non_streaming_request(ollama_request: Dict[str, Any], proxy: ClaudeOllamaProxy):
+    """Handle regular (non-streaming) requests"""
+    try:
+        response = requests.post(
+            f"{OLLAMA_BASE_URL}/api/chat",
+            json=ollama_request,
+            timeout=120  # Increased timeout for large models
+        )
+        response.raise_for_status()
+        
+        ollama_response = response.json()
+        claude_response = proxy.ollama_to_claude_format(ollama_response)
+        
+        return jsonify(claude_response)
+        
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Ollama request failed: {str(e)}"}), 500
+
+@app.route('/v1/models', methods=['GET'])
+def list_models():
+    """Return available models (mimics Claude API)"""
+    return jsonify({
+        "data": [
+            {
+                "id": "claude-3-sonnet-20240229",
+                "object": "model",
+                "created": int(time.time()),
+                "owned_by": "anthropic"
+            }
+        ]
+    })
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    try:
+        response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+        if response.status_code == 200:
+            models = response.json().get('models', [])
+            model_names = [model.get('name', '') for model in models]
+            return jsonify({
+                "status": "healthy", 
+                "ollama": "connected",
+                "available_models": model_names,
+                "using_model": OLLAMA_MODEL
+            })
+        else:
+            return jsonify({"status": "unhealthy", "ollama": "disconnected"}), 500
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy", 
+            "ollama": "unreachable",
+            "error": str(e)
+        }), 500
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("Claude Code → Ollama Proxy Server")
+    print("=" * 60)
+    print(f"Ollama URL: {OLLAMA_BASE_URL}")
+    print(f"Using model: {OLLAMA_MODEL}")
+    print("Proxy running on http://localhost:8000")
+    print("\nEndpoints:")
+    print("  POST /v1/messages - Main Claude Code endpoint")
+    print("  GET  /v1/models   - List models")
+    print("  GET  /health      - Health check")
+    print("\nMake sure to set these environment variables:")
+    print('  ANTHROPIC_API_KEY="dummy-key"')
+    print('  ANTHROPIC_BASE_URL="http://localhost:8000"')
+    print("=" * 60)
+    
+    app.run(host='0.0.0.0', port=8000, debug=True)
