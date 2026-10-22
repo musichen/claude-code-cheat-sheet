@@ -803,6 +803,15 @@ claude --allowedTools "Bash(git:*)" --disallowedTools "Bash(rm:*)"
 
 We welcome contributions! Please see the Claude Code documentation for guidelines.
 
+### How to Contribute
+
+1. Fork this repository and clone your fork.
+2. Create a branch for your change, for example `docs/add-session-example`.
+3. Edit `README.md` (or the files under `subagents/` for subagent examples), keeping the level structure and table formatting consistent with the surrounding sections.
+4. Test every command you add or change in Claude Code and note the result in your pull request.
+5. If your change reflects newer Claude Code behaviour, update the "Last verified against official Claude Code docs" date at the bottom of this file.
+6. Open a pull request describing what you added or fixed and how you verified it.
+
 ### Ways to Contribute
 
 - 🐛 Report bugs or issues
