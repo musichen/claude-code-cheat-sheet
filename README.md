@@ -72,6 +72,23 @@ claude auth status
 
 ---
 
+## Levels at a Glance
+
+| Level | Theme |
+| --- | --- |
+| 1 | Basic Commands |
+| 2 | Intermediate Commands |
+| 3 | Advanced Commands |
+| 4 | Expert Commands |
+| 5 | Power User Commands |
+| 6 | Master Commands |
+| 7 | Workflow Automation |
+| 8 | Integration and Ecosystem |
+| 9 | Performance and Optimization |
+| 10 | Enterprise and Production |
+
+Work through the levels in order, or jump to the Command Reference Tables for lookup.
+
 ## 🟢 Level 1: Basic Commands
 
 Essential commands to get started
